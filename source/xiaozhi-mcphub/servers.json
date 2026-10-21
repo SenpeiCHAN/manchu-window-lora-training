@@ -1251,7 +1251,7 @@
       "AWS_ACCESS_KEY_ID": {
         "description": "Your AWS Access Key ID required for authenticating API calls to AWS services.",
         "required": true,
-        "example": "AKIAIOSFODNN7EXAMPLE"
+        "example": "AWS_ACCESS_KEY_ID_PLACEHOLDER"
       },
       "AWS_SECRET_ACCESS_KEY": {
         "description": "Your AWS Secret Access Key required alongside the Access Key ID for authentication.",
@@ -21358,7 +21358,7 @@
       "GITHUB_PERSONAL_ACCESS_TOKEN": {
         "description": "Personal Access Token for GitHub to authenticate API requests",
         "required": true,
-        "example": "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        "example": "GITHUB_TOKEN_PLACEHOLDER"
       }
     },
     "installations": {
@@ -23112,7 +23112,7 @@
       "YOUTUBE_API_KEY": {
         "description": "Your YouTube Data API key, needed for authentication when making requests to the YouTube API.",
         "required": true,
-        "example": "AIzaSyD4-1234abcdEFGHijklmnop"
+        "example": "GOOGLE_API_KEY_PLACEHOLDER"
       }
     }
   },
@@ -31504,7 +31504,7 @@
       "GOOGLE_API_KEY": {
         "description": "Your Google API key for accessing the Google Custom Search API.",
         "required": true,
-        "example": "AIzaSyA-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        "example": "GOOGLE_API_KEY_PLACEHOLDER"
       },
       "GOOGLE_SEARCH_ENGINE_ID": {
         "description": "The unique identifier for your Custom Search Engine that you created on Google.",
