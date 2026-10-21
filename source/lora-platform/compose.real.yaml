@@ -1,0 +1,4 @@
+services:
+  worker:
+    environment:
+      LORA_EXECUTE_REAL: "1"

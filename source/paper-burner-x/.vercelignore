@@ -1,0 +1,43 @@
+# Workers 目录（独立部署到 Cloudflare）
+workers/
+
+# 后端文件（Docker 模式专用）
+server/
+docker/
+scripts/
+admin/
+app/
+.github/workflows/
+
+# 测试相关
+test/
+test-*.html
+**/__tests__/**
+**/*.test.ts
+**/*.test.tsx
+**/*.test.js
+**/*.spec.ts
+**/*.spec.tsx
+**/*.spec.js
+
+# 文档目录
+docs/
+
+# 文档（排除 README.md）
+*.md
+!README.md
+
+# 开发文件
+.vscode/
+.idea/
+.claude/
+organize-docs.sh
+
+# Docker 相关
+docker-compose.yml
+Dockerfile
+.env.example
+deploy.sh
+deploy.ps1
+COMMIT_CHECKLIST.md
+LOCAL_TESTING.md

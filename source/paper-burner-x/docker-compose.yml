@@ -1,0 +1,92 @@
+version: '3.9'
+
+services:
+  # -------------------- PostgreSQL 数据库 --------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: paperburner-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-paperburner}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme_secure_password}
+      POSTGRES_DB: ${DB_NAME:-paperburner}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5433}:5432"   # 宿主机 5433 → 容器 5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-paperburner}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------- Paper Burner X 应用 --------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paperburner-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-paperburner}:${DB_PASSWORD:-changeme_secure_password}@postgres:5432/${DB_NAME:-paperburner}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      JWT_SECRET: ${JWT_SECRET:-R8h7$g2Tz!9wKpL3xQeVfY1uMjN4bHsP}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      ENCRYPTION_SECRET: ${ENCRYPTION_SECRET:-Xf3!nK9$QpL1vR7uBzC2aJ4sDdW8tUyH}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      DEPLOYMENT_MODE: backend
+      RUN_MIGRATIONS: "true"
+      CSP_ALLOW_INLINE: "true"
+      MINERU_API_TOKEN: ${MINERU_API_TOKEN:-}
+      DOC2X_API_TOKEN: ${DOC2X_API_TOKEN:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-}
+      TONGYI_API_KEY: ${TONGYI_API_KEY:-}
+      VOLCANO_API_KEY: ${VOLCANO_API_KEY:-}
+    ports:
+      - "127.0.0.1:3300:3000"   # 宿主机 3300 → 容器 3000
+    volumes:
+      - app_uploads:/app/uploads
+      - ./server/prisma/migrations:/app/server/prisma/migrations:ro
+      - ./server/prisma/schema.prisma:/app/server/prisma/schema.prisma:ro
+      - ./server/src:/app/server/src:ro
+      - ./index.html:/app/index.html:ro
+      - ./login.html:/app/login.html:ro
+      - ./admin:/app/admin:ro
+      - ./views:/app/views:ro
+      - ./js:/app/js:ro
+      - ./css:/app/css:ro
+      - ./public:/app/public:ro
+
+  # -------------------- Nginx 反向代理（可选） --------------------
+  nginx:
+    image: nginx:alpine
+    container_name: paperburner-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/ssl:/etc/nginx/ssl:ro
+    profiles:
+      - production
+
+# -------------------- 数据卷 --------------------
+volumes:
+  postgres_data:
+    driver: local
+  app_uploads:
+    driver: local
+
+# -------------------- 网络 --------------------
+networks:
+  default:
+    name: paperburner-network

@@ -1,0 +1,2 @@
+# Compatibility with older instructions. Production is now the default.
+services: {}

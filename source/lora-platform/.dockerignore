@@ -1,0 +1,16 @@
+.git
+.gitignore
+frontend/node_modules
+frontend/.npm-cache
+frontend/dist
+data
+stable-diffusion
+docker-run-backup-20261005
+.docker
+docs
+logs
+**/__pycache__
+*.pyc
+**/node_modules
+**/.npm-cache
+**/dist

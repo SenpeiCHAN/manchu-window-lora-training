@@ -1,0 +1,111 @@
+name: lora-platform
+
+x-runtime: &runtime
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  web:
+    <<: *runtime
+    container_name: lora-web
+    build:
+      context: .
+      dockerfile: docker/web.prod.Dockerfile
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  api:
+    <<: *runtime
+    container_name: lora-api
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    working_dir: /app
+    command: uvicorn backend.api.main:app --host 0.0.0.0 --port 8000
+    environment:
+      LORA_STATE_DB: /state/lora.db
+      LORA_DATA_ROOT: /data
+      TZ: Asia/Shanghai
+    volumes:
+      - ./data:/data
+      - ./data/state:/state
+      - "E:/LoRA-Manzhou:/data/manzhou"
+      - "E:/LoRA-Manzhou/runs:/data/runs/manzhou"
+      - "E:/LoRA-Manzhou/outputs:/data/outputs/lora-platform/manzhou"
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  worker:
+    <<: *runtime
+    container_name: lora-gpu-worker
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    working_dir: /app
+    command: python -m backend.worker.main
+    init: true
+    environment:
+      LORA_STATE_DB: /state/lora.db
+      LORA_DATA_ROOT: /data
+      LORA_EXECUTE_REAL: "1"
+      LORA_POLL_SECONDS: "1"
+      HF_HOME: /cache/huggingface
+      TORCH_HOME: /cache/torch
+      TZ: Asia/Shanghai
+    volumes:
+      - ./backend:/app/backend:ro
+      - ./scripts:/app/scripts:ro
+      - ./data:/data
+      - ./data/state:/state
+      - ./data/cache:/cache
+      - "E:/LoRA-Manzhou:/data/manzhou"
+      - "E:/LoRA-Manzhou/runs:/data/runs/manzhou"
+      - "E:/LoRA-Manzhou/outputs:/data/outputs/lora-platform/manzhou"
+    gpus: all
+    depends_on:
+      api:
+        condition: service_healthy
+
+  stable-diffusion:
+    <<: *runtime
+    container_name: lora-stable-diffusion
+    profiles: ["sd"]
+    build:
+      context: .
+      dockerfile: docker/sd.Dockerfile
+    working_dir: /opt/ComfyUI
+    command: >-
+      bash -lc "mkdir -p models/checkpoints models/loras
+      && ln -sfn /data/models/sd15 models/checkpoints/sd15
+      && ln -sfn /data/runs models/loras/lora-platform-runs
+      && python main.py --listen 0.0.0.0 --port 8188"
+    volumes:
+      - ./data/models:/data/models
+      - ./data/runs:/data/runs
+      - ./data/outputs:/opt/ComfyUI/output
+      - ./stable-diffusion/user:/opt/ComfyUI/user
+      - ./stable-diffusion/input:/opt/ComfyUI/input
+      - "E:/LoRA-Manzhou/runs:/data/runs/manzhou"
+      - "E:/LoRA-Manzhou/outputs:/opt/ComfyUI/output/lora-platform/manzhou"
+    ports:
+      - "127.0.0.1:8188:8188"
+    gpus: all
+    init: true

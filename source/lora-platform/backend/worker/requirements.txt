@@ -1,0 +1,5 @@
+Pillow==11.1.0
+tensorboard==2.19.0
+onnxruntime-gpu==1.21.0
+onnx==1.17.0
+huggingface-hub==1.32.0

@@ -1,0 +1,22 @@
+# Explicit development mode; daily desktop launcher uses compose.yaml only.
+services:
+  web:
+    image: lora-platform-web-dev
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    working_dir: /app/frontend
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
+    environment:
+      VITE_API_BASE: /api
+    volumes:
+      - ./frontend:/app/frontend
+      - ./data/dev/node_modules:/app/frontend/node_modules
+    ports: !override
+      - "127.0.0.1:8080:5173"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+  api:
+    volumes:
+      - ./backend:/app/backend:ro
+    command: uvicorn backend.api.main:app --host 0.0.0.0 --port 8000 --reload

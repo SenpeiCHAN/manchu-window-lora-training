@@ -1,0 +1,55 @@
+docker version
+Client:
+ Version:           29.8.1
+ API version:       1.56
+ Go version:        go1.26.8
+ Git commit:        4a63305
+ Built:             Tue Sep 15 16:28:39 2026
+ OS/Arch:           windows/amd64
+ Context:           desktop-linux
+
+Server: Docker Desktop 4.93.0 (240920)
+ Engine:
+  Version:          29.8.1
+  API version:      1.56 (minimum version 1.40)
+  Go version:       go1.26.8
+  Git commit:       464cd50
+  Built:            Tue Sep 15 16:25:38 2026
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v2.3.5
+  GitCommit:        1294c24a7da8e5a793ed378161673abe94118892
+ runc:
+  Version:          1.5.1
+  GitCommit:        v1.5.1-0-g8f2685a4
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+--- images ---
+REPOSITORY                       TAG                       IMAGE ID                                                                  CREATED         SIZE
+lora-platform-web                latest                    sha256:750886a1e5bdb4c5b6d6104bab754446b6aed1b63971e2471c1477aa72c11a53   13 days ago     136MB
+lora-platform-api                latest                    sha256:5cafba3ca91dda0b03b59163c4132fecd181f8c8395c6ce780703775022ee8e0   13 days ago     597MB
+lora-platform-stable-diffusion   latest                    sha256:3861fe3fa97e4c349dbc2959e2ce7d704b9048b10b130f49cf53fedad2158b9f   2 weeks ago     16GB
+lora-platform-worker             latest                    sha256:8287e622ca31b07202194db98a1bf35bd9a52814a2e912a8852c50f9970c783e   2 weeks ago     14GB
+paper-burner-x-app               latest                    sha256:ae1f0523f76a5408878892978bc70a582e6590c74b72a6478bf590f848b47760   5 months ago    416MB
+postgres                         16-alpine                 sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50   6 months ago    395MB
+pgvector/pgvector                pg16                      sha256:7d400e340efb42f4d8c9c12c6427adb253f726881a9985d2a471bf0eed824dff   7 months ago    621MB
+huangjunsen/xiaozhi-mcphub       latest                    sha256:ebc01b287f5d4457bb405acd89198daa4538e98689e580ebf35eb96cf1c404dd   13 months ago   3.48GB
+nvidia/cuda                      12.8.1-base-ubuntu22.04   sha256:001469ea0f3dec85a1ca929aeea3b58ae369d4c11228b10aec1f642bb6ca7a6f   19 months ago   402MB
+--- containers and ports ---
+CONTAINER ID                                                       IMAGE                               COMMAND                                                                                                                                                                                                           CREATED        STATUS                                 PORTS                                         NAMES
+46faedad0ce859c05cd235b12bac6d2c201c7d63b226cff99ccec042ba4525e0   lora-platform-web                   "/docker-entrypoint.sh nginx -g 'daemon off;'"                                                                                                                                                                    13 days ago    Up About a minute (healthy)            127.0.0.1:8080->80/tcp                        lora-web
+cfd10387b551b964f2b93e3be2c140c6c854fd8bd38946927afc57c724fecb90   lora-platform-api                   "uvicorn backend.api.main:app --host 0.0.0.0 --port 8000"                                                                                                                                                         13 days ago    Up About a minute (healthy)            8000/tcp                                      lora-api
+bd0397f3f8466d677e61534c3863d910ed3cc4defbd5eb0b478bdfd2e893dd31   lora-platform-worker                "python -m backend.worker.main"                                                                                                                                                                                   13 days ago    Up About a minute                                                                    lora-gpu-worker
+835c179b8f24b1b7074dc4091d43d50c84ba6c268cddd56eeab1f19467cb77f2   lora-platform-stable-diffusion      "bash -lc 'mkdir -p models/checkpoints models/loras && ln -sfn /data/models/sd15 models/checkpoints/sd15 && ln -sfn /data/runs models/loras/lora-platform-runs && python main.py --listen 0.0.0.0 --port 8188'"   13 days ago    Up About a minute                      127.0.0.1:8188->8188/tcp                      lora-stable-diffusion
+b5b8f430059b53afbee1cf8ab1e0383000c4e43e9c1faeb7fa7036c5dba62a91   paper-burner-x-app                  "dumb-init -- /app/server/scripts/docker-entrypoint.sh"                                                                                                                                                           5 months ago   Up About a minute (health: starting)   127.0.0.1:3300->3000/tcp                      paperburner-app
+6e9175ab0654b1a7ef2f2423731ecf31f91f61bb3a8e331bc7c3f2cd475e8bfa   postgres:16-alpine                  "docker-entrypoint.sh postgres"                                                                                                                                                                                   5 months ago   Up About a minute (healthy)            0.0.0.0:5433->5432/tcp, [::]:5433->5432/tcp   paperburner-db
+98a7a0874309358f499f3baf330eec1036687ac82cae334b86e26e932102a3d6   huangjunsen/xiaozhi-mcphub:latest   "/usr/local/bin/entrypoint.sh pnpm start"                                                                                                                                                                         6 months ago   Up About a minute                      0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp   xiaozhi-mcphub
+1ac5444e6c663b096c370a78bd72d42c3bb22e7df5f69571691c01c8add6d4ed   pgvector/pgvector:pg16              "docker-entrypoint.sh postgres"                                                                                                                                                                                   6 months ago   Up About a minute (healthy)            127.0.0.1:5432->5432/tcp                      pgvector
+--- volumes ---
+DRIVER    VOLUME NAME
+local     paper-burner-x_app_uploads
+local     paper-burner-x_postgres_data
+local     xiaozhi-mcphub-main_appdata
+local     xiaozhi-mcphub-main_pgdata
